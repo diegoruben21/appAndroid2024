@@ -1,4 +1,5 @@
 package com.example.appandroidjuegosdeestrategia;
+
 import android.Manifest;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -39,8 +40,10 @@ public class MainActivity extends AppCompatActivity {
                     AndroidGame game = (AndroidGame) result.getData().getSerializableExtra("game");
                     int index = result.getData().getIntExtra("index", -1);
                     if (index == -1) {
+                        // Nuevo juego
                         gameList.add(game);
                     } else {
+                        // Editar juego existente
                         gameList.set(index, game);
                     }
                     adapter.notifyDataSetChanged();
@@ -49,7 +52,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        //Aplicar modo oscuro si estaba activado antes//
+        // Aplicar modo oscuro si estaba activado antes
         SharedPreferences preferences = getSharedPreferences(PREFS, MODE_PRIVATE);
         boolean isDarkMode = preferences.getBoolean(DARK_MODE, false);
         AppCompatDelegate.setDefaultNightMode(isDarkMode ?
@@ -58,7 +61,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Permiso de almacenamiento
+        // Pedir permiso de almacenamiento (solo necesario en Android 9 o inferior)
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
                 != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this,
@@ -66,7 +69,7 @@ public class MainActivity extends AppCompatActivity {
                     STORAGE_PERMISSION_CODE);
         }
 
-        // Lista de juegos y RecyclerView
+        // Inicializar lista y RecyclerView
         gameList = new ArrayList<>();
         recyclerView = findViewById(R.id.recyclerView);
         adapter = new AndroidGameAdapter(this, gameList, this::editGame, this::deleteGame);

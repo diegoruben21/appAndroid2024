@@ -2,10 +2,12 @@ package com.example.appandroidjuegosdeestrategia.adapter;
 
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -15,7 +17,6 @@ import com.example.appandroidjuegosdeestrategia.GameDetailActivity;
 import com.example.appandroidjuegosdeestrategia.R;
 import com.example.appandroidjuegosdeestrategia.modelo.AndroidGame;
 
-import java.text.BreakIterator;
 import java.util.List;
 
 public class AndroidGameAdapter extends RecyclerView.Adapter<AndroidGameAdapter.GameViewHolder> {
@@ -25,6 +26,7 @@ public class AndroidGameAdapter extends RecyclerView.Adapter<AndroidGameAdapter.
     private final OnEditClickListener onEditClickListener;
     private final OnDeleteClickListener onDeleteClickListener;
 
+    // Interfaces para los botones
     public interface OnEditClickListener {
         void onEdit(int index);
     }
@@ -33,7 +35,9 @@ public class AndroidGameAdapter extends RecyclerView.Adapter<AndroidGameAdapter.
         void onDelete(int index);
     }
 
-    public AndroidGameAdapter(Context context, List<AndroidGame> games, OnEditClickListener editListener, OnDeleteClickListener deleteListener) {
+    public AndroidGameAdapter(Context context, List<AndroidGame> games,
+                              OnEditClickListener editListener,
+                              OnDeleteClickListener deleteListener) {
         this.context = context;
         this.games = games;
         this.onEditClickListener = editListener;
@@ -43,7 +47,8 @@ public class AndroidGameAdapter extends RecyclerView.Adapter<AndroidGameAdapter.
     @NonNull
     @Override
     public GameViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_android_game, parent, false);
+        View view = LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.item_android_game, parent, false);
         return new GameViewHolder(view);
     }
 
@@ -51,16 +56,25 @@ public class AndroidGameAdapter extends RecyclerView.Adapter<AndroidGameAdapter.
     public void onBindViewHolder(@NonNull GameViewHolder holder, int position) {
         AndroidGame game = games.get(position);
 
+        // Seteamos los textos
         holder.txtNombre.setText("Nombre: " + game.getNombre());
         holder.txtGenero.setText("Género: " + game.getGenero());
         holder.txtCompatibilidad.setText("Compatibilidad: " + game.getCompatibilidad());
         holder.txtVersion.setText("Android: " + game.getVersionAndroid());
-
-        holder.btnEdit.setOnClickListener(v -> onEditClickListener.onEdit(position));
-        holder.btnDelete.setOnClickListener(v -> onDeleteClickListener.onDelete(position));
         holder.txtPuntuacion.setText("⭐ " + game.getPuntuacion());
 
+        // Si el juego tiene imagen, la mostramos
+        if (game.getImageUri() != null) {
+            holder.imgGameItem.setImageURI(Uri.parse(game.getImageUri()));
+        } else {
+            holder.imgGameItem.setImageResource(R.drawable.ic_launcher_background); // Imagen por defecto
+        }
 
+        // Botones
+        holder.btnEdit.setOnClickListener(v -> onEditClickListener.onEdit(position));
+        holder.btnDelete.setOnClickListener(v -> onDeleteClickListener.onDelete(position));
+
+        // Click en el item -> abre GameDetailActivity
         holder.itemView.setOnClickListener(v -> {
             Intent intent = new Intent(context, GameDetailActivity.class);
             intent.putExtra("juego", game);
@@ -74,10 +88,9 @@ public class AndroidGameAdapter extends RecyclerView.Adapter<AndroidGameAdapter.
     }
 
     static class GameViewHolder extends RecyclerView.ViewHolder {
-
-        public BreakIterator txtPuntuacion;
-        TextView txtNombre, txtGenero, txtCompatibilidad, txtVersion;
+        TextView txtNombre, txtGenero, txtCompatibilidad, txtVersion, txtPuntuacion;
         Button btnEdit, btnDelete;
+        ImageView imgGameItem;
 
         public GameViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -85,6 +98,8 @@ public class AndroidGameAdapter extends RecyclerView.Adapter<AndroidGameAdapter.
             txtGenero = itemView.findViewById(R.id.txtGenero);
             txtCompatibilidad = itemView.findViewById(R.id.txtCompatibilidad);
             txtVersion = itemView.findViewById(R.id.txtVersion);
+            txtPuntuacion = itemView.findViewById(R.id.txtPuntuacion);
+            imgGameItem = itemView.findViewById(R.id.imgGameItem);
             btnEdit = itemView.findViewById(R.id.btnEdit);
             btnDelete = itemView.findViewById(R.id.btnDelete);
         }
