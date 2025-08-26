@@ -40,10 +40,8 @@ public class MainActivity extends AppCompatActivity {
                     AndroidGame game = (AndroidGame) result.getData().getSerializableExtra("game");
                     int index = result.getData().getIntExtra("index", -1);
                     if (index == -1) {
-                        // Nuevo juego
                         gameList.add(game);
                     } else {
-                        // Editar juego existente
                         gameList.set(index, game);
                     }
                     adapter.notifyDataSetChanged();
@@ -61,7 +59,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Pedir permiso de almacenamiento (solo necesario en Android 9 o inferior)
+        // Permiso de almacenamiento
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
                 != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this,
@@ -69,7 +67,7 @@ public class MainActivity extends AppCompatActivity {
                     STORAGE_PERMISSION_CODE);
         }
 
-        // Inicializar lista y RecyclerView
+        // Lista de juegos y RecyclerView
         gameList = new ArrayList<>();
         recyclerView = findViewById(R.id.recyclerView);
         adapter = new AndroidGameAdapter(this, gameList, this::editGame, this::deleteGame);
@@ -86,6 +84,12 @@ public class MainActivity extends AppCompatActivity {
         // Botón cerrar sesión
         Button btnLogout = findViewById(R.id.btnLogout);
         btnLogout.setOnClickListener(v -> {
+            // ✅ Borrar sesión
+            getSharedPreferences("MyPrefs", MODE_PRIVATE)
+                    .edit()
+                    .remove("loggedUser")
+                    .apply();
+
             Intent intent = new Intent(MainActivity.this, LoginActivity.class);
             startActivity(intent);
             finish();

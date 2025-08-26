@@ -10,7 +10,7 @@
         android:id="@+id/edtUsername"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Usuario"
+        android:hint="Nuevo Usuario"
         android:inputType="textPersonName"
         android:layout_marginBottom="12dp" />
 
@@ -18,21 +18,14 @@
         android:id="@+id/edtPassword"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Contraseña"
+        android:hint="Nueva Contraseña"
         android:inputType="textPassword"
         android:layout_marginBottom="20dp" />
 
     <Button
-        android:id="@+id/btnLogin"
+        android:id="@+id/btnRegister"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Iniciar Sesión"
-        android:layout_marginBottom="12dp" />
-
-    <Button
-        android:id="@+id/btnGoRegister"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Crear Cuenta" />
+        android:text="Registrar" />
 
 </LinearLayout>

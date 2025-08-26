@@ -1,8 +1,6 @@
 package com.example.appandroidjuegosdeestrategia;
 
-import android.Manifest;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -10,6 +8,7 @@ import android.provider.MediaStore;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.RatingBar;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -24,8 +23,10 @@ public class EditGameActivity extends AppCompatActivity {
     private EditText edtNombre, edtGenero, edtCompatibilidad, edtVersion;
     private ImageView imgGame;
     private Button btnGuardar, btnSeleccionarImagen;
+    private RatingBar ratingBar;
 
     private Uri selectedImageUri;
+    private AndroidGame game;
     private int index = -1;
 
     @Override
@@ -40,16 +41,17 @@ public class EditGameActivity extends AppCompatActivity {
         imgGame = findViewById(R.id.imgGame);
         btnGuardar = findViewById(R.id.btnGuardar);
         btnSeleccionarImagen = findViewById(R.id.btnSeleccionarImagen);
+        ratingBar = findViewById(R.id.ratingBar);
 
-        // Ver si venimos de editar un juego existente
+        // Si es edición
         if (getIntent().hasExtra("game")) {
-            AndroidGame game = (AndroidGame) getIntent().getSerializableExtra("game");
+            game = (AndroidGame) getIntent().getSerializableExtra("game");
             index = getIntent().getIntExtra("index", -1);
-
             edtNombre.setText(game.getNombre());
             edtGenero.setText(game.getGenero());
             edtCompatibilidad.setText(game.getCompatibilidad());
             edtVersion.setText(game.getVersionAndroid());
+            ratingBar.setRating(game.getPuntuacion());
 
             if (game.getImageUri() != null) {
                 selectedImageUri = Uri.parse(game.getImageUri());
@@ -57,42 +59,29 @@ public class EditGameActivity extends AppCompatActivity {
             }
         }
 
-        // Seleccionar imagen
-        btnSeleccionarImagen.setOnClickListener(v -> {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                imagePickerLauncher.launch("image/*");
-            } else {
-                if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
-                        != PackageManager.PERMISSION_GRANTED) {
-                    requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 100);
-                } else {
-                    openImagePicker();
-                }
-            }
-        });
-
-        // Guardar juego
+        btnSeleccionarImagen.setOnClickListener(v -> openImagePicker());
         btnGuardar.setOnClickListener(v -> guardarJuego());
     }
 
     private void guardarJuego() {
-        String nombre = edtNombre.getText().toString().trim();
-        String genero = edtGenero.getText().toString().trim();
-        String compatibilidad = edtCompatibilidad.getText().toString().trim();
-        String version = edtVersion.getText().toString().trim();
+        String nombre = edtNombre.getText().toString();
+        String genero = edtGenero.getText().toString();
+        String compatibilidad = edtCompatibilidad.getText().toString();
+        String version = edtVersion.getText().toString();
+        int puntuacion = (int) ratingBar.getRating();
 
         if (nombre.isEmpty() || genero.isEmpty() || compatibilidad.isEmpty() || version.isEmpty()) {
             Toast.makeText(this, "Por favor completa todos los campos", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // Crear objeto AndroidGame
         AndroidGame nuevoJuego = new AndroidGame(
                 nombre,
                 genero,
                 compatibilidad,
                 version,
-                selectedImageUri != null ? selectedImageUri.toString() : null
+                selectedImageUri != null ? selectedImageUri.toString() : null,
+                puntuacion
         );
 
         Intent intent = new Intent();
@@ -107,16 +96,6 @@ public class EditGameActivity extends AppCompatActivity {
         imagePickerIntentLauncher.launch(intent);
     }
 
-    // Para Android 13+
-    private final ActivityResultLauncher<String> imagePickerLauncher =
-            registerForActivityResult(new ActivityResultContracts.GetContent(), uri -> {
-                if (uri != null) {
-                    selectedImageUri = uri;
-                    imgGame.setImageURI(uri);
-                }
-            });
-
-    // Para Android <13
     private final ActivityResultLauncher<Intent> imagePickerIntentLauncher =
             registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
                 if (result.getResultCode() == RESULT_OK && result.getData() != null) {
