@@ -1,8 +1,7 @@
-<?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.appandroidjuegosdeestrategia">
 
-    <!-- 🚀 PERMISOS Y FEATURES -->
+    <!-- Permisos -->
     <uses-feature
         android:name="android.hardware.camera"
         android:required="false" />
@@ -11,10 +10,6 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.CAMERA"/>
     <uses-permission android:name="android.permission.INTERNET"/>
-    <uses-permission android:name="android.permission.INTERNET"/>
-
-
-
 
     <application
         android:allowBackup="true"
@@ -24,9 +19,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCompat.Light.DarkActionBar">
 
-        <!-- Pantalla principal -->
+
         <activity
-            android:name=".MainActivity"
+            android:name=".SplashActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
@@ -34,15 +29,20 @@
             </intent-filter>
         </activity>
 
-        <!-- Pantalla para editar juegos -->
-        <activity android:name=".EditGameActivity" />
-
-        <!-- Detalles del juego -->
-        <activity android:name=".GameDetailActivity" />
-
-        <!-- Pantalla de login -->
+        <!-- Login -->
         <activity android:name=".LoginActivity" />
 
-    </application>
+        <!-- Registro -->
+        <activity android:name=".RegisterActivity" />
 
+        <!-- Main -->
+        <activity android:name=".MainActivity" />
+
+        <!-- Editar juegos -->
+        <activity android:name=".EditGameActivity" />
+
+        <!-- Detalles -->
+        <activity android:name=".GameDetailActivity" />
+
+    </application>
 </manifest>

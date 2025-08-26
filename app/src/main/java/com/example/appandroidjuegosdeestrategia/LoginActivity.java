@@ -1,8 +1,7 @@
 package com.example.appandroidjuegosdeestrategia;
 
-import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
@@ -10,58 +9,69 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.appandroidjuegosdeestrategia.db.DBHelper;
+import com.example.appandroidjuegosdeestrategia.util.PasswordUtils;
+
 public class LoginActivity extends AppCompatActivity {
 
-    private EditText edtUsuario, edtPassword;
-    private Button btnLogin;
-
-    // Nombre del archivo de preferencias
-    private static final String PREFS_NAME = "UserPrefs";
+    private EditText edtUsername, edtPassword;
+    private Button btnLogin, btnGoRegister;
+    private DBHelper dbHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_login);
 
-        edtUsuario = findViewById(R.id.edtUsuario);
-        edtPassword = findViewById(R.id.edtPassword);
-        btnLogin = findViewById(R.id.btnLogin);
+        // ✅ Revisar si ya hay sesión activa
+        String loggedUser = getSharedPreferences("MyPrefs", MODE_PRIVATE)
+                .getString("loggedUser", null);
 
-        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-
-        // Si ya hay sesión iniciada, saltar al MainActivity directamente
-        if (prefs.getBoolean("isLoggedIn", false)) {
-            irAlMain();
+        if (loggedUser != null) {
+            startActivity(new Intent(this, MainActivity.class));
+            finish();
+            return;
         }
 
-        btnLogin.setOnClickListener(v -> {
-            String usuario = edtUsuario.getText().toString().trim();
-            String password = edtPassword.getText().toString().trim();
+        setContentView(R.layout.activity_login);
 
-            if (usuario.isEmpty() || password.isEmpty()) {
-                Toast.makeText(this, "Completa los campos", Toast.LENGTH_SHORT).show();
-                return;
-            }
+        edtUsername = findViewById(R.id.edtUsername);
+        edtPassword = findViewById(R.id.edtPassword);
+        btnLogin = findViewById(R.id.btnLogin);
+        btnGoRegister = findViewById(R.id.btnGoRegister);
+        dbHelper = new DBHelper(this);
 
-            // 🔑 Validación simple (puedes mejorarlo con base de datos o API)
-            if (usuario.equals("admin") && password.equals("1234")) {
-                // Guardar sesión
-                prefs.edit()
-                        .putBoolean("isLoggedIn", true)
-                        .putString("usuario", usuario)
-                        .apply();
-
-                Toast.makeText(this, "Bienvenido " + usuario, Toast.LENGTH_SHORT).show();
-                irAlMain();
-            } else {
-                Toast.makeText(this, "Usuario o contraseña incorrectos", Toast.LENGTH_SHORT).show();
-            }
+        btnLogin.setOnClickListener(v -> loginUser());
+        btnGoRegister.setOnClickListener(v -> {
+            startActivity(new Intent(this, RegisterActivity.class));
         });
     }
 
-    private void irAlMain() {
-        Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-        startActivity(intent);
-        finish(); // para que no pueda regresar con "back"
+    private void loginUser() {
+        String username = edtUsername.getText().toString().trim();
+        String password = edtPassword.getText().toString();
+
+        Cursor cursor = dbHelper.getUser(username);
+        if (cursor.moveToFirst()) {
+            String storedHash = cursor.getString(cursor.getColumnIndexOrThrow("password_hash"));
+            String salt = cursor.getString(cursor.getColumnIndexOrThrow("salt"));
+
+            String inputHash = PasswordUtils.hashPassword(password, salt);
+
+            if (storedHash.equals(inputHash)) {
+                // ✅ Guardar sesión
+                getSharedPreferences("MyPrefs", MODE_PRIVATE)
+                        .edit()
+                        .putString("loggedUser", username)
+                        .apply();
+
+                Toast.makeText(this, "Login exitoso", Toast.LENGTH_SHORT).show();
+                startActivity(new Intent(this, MainActivity.class));
+                finish();
+            } else {
+                Toast.makeText(this, "Contraseña incorrecta", Toast.LENGTH_SHORT).show();
+            }
+        } else {
+            Toast.makeText(this, "Usuario no encontrado", Toast.LENGTH_SHORT).show();
+        }
     }
 }
