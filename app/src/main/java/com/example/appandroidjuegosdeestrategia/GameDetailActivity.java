@@ -3,18 +3,18 @@ package com.example.appandroidjuegosdeestrategia;
 import android.net.Uri;
 import android.os.Bundle;
 import android.widget.ImageView;
-import android.widget.RatingBar;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.appandroidjuegosdeestrategia.modelo.AndroidGame;
+import com.google.firebase.analytics.FirebaseAnalytics;
 
 public class GameDetailActivity extends AppCompatActivity {
 
-    private TextView txtNombre, txtGenero, txtCompatibilidad, txtVersion;
+    private TextView txtNombre, txtGenero, txtCompatibilidad, txtVersion, txtPuntuacion;
     private ImageView imgJuego;
-    private RatingBar ratingBarDetail;
+    private FirebaseAnalytics firebaseAnalytics;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,8 +25,11 @@ public class GameDetailActivity extends AppCompatActivity {
         txtGenero = findViewById(R.id.txtGeneroDetail);
         txtCompatibilidad = findViewById(R.id.txtCompatibilidadDetail);
         txtVersion = findViewById(R.id.txtVersionDetail);
+        txtPuntuacion = findViewById(R.id.txtPuntuacionDetail);
         imgJuego = findViewById(R.id.imgJuegoDetail);
-        ratingBarDetail = findViewById(R.id.ratingBarDetail);
+
+        // Inicializar Firebase Analytics
+        firebaseAnalytics = FirebaseAnalytics.getInstance(this);
 
         AndroidGame juego = (AndroidGame) getIntent().getSerializableExtra("juego");
 
@@ -35,12 +38,18 @@ public class GameDetailActivity extends AppCompatActivity {
             txtGenero.setText("Género: " + juego.getGenero());
             txtCompatibilidad.setText("Compatibilidad: " + juego.getCompatibilidad());
             txtVersion.setText("Android: " + juego.getVersionAndroid());
+            txtPuntuacion.setText("⭐ " + juego.getPuntuacion());
 
             if (juego.getImageUri() != null) {
                 imgJuego.setImageURI(Uri.parse(juego.getImageUri()));
             }
 
-            ratingBarDetail.setRating(juego.getPuntuacion());
+            // 👉 Evento de vista de detalle en Firebase Analytics
+            Bundle bundle = new Bundle();
+            bundle.putString("game_name", juego.getNombre());
+            bundle.putString("game_genre", juego.getGenero());
+            bundle.putInt("puntuacion", juego.getPuntuacion());
+            firebaseAnalytics.logEvent("game_detail_view", bundle);
         }
     }
 }

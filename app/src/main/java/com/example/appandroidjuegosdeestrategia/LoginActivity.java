@@ -11,27 +11,18 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.appandroidjuegosdeestrategia.db.DBHelper;
 import com.example.appandroidjuegosdeestrategia.util.PasswordUtils;
+import com.google.firebase.analytics.FirebaseAnalytics;
 
 public class LoginActivity extends AppCompatActivity {
 
     private EditText edtUsername, edtPassword;
     private Button btnLogin, btnGoRegister;
     private DBHelper dbHelper;
+    private FirebaseAnalytics firebaseAnalytics; // Firebase Analytics
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        // ✅ Revisar si ya hay sesión activa
-        String loggedUser = getSharedPreferences("MyPrefs", MODE_PRIVATE)
-                .getString("loggedUser", null);
-
-        if (loggedUser != null) {
-            startActivity(new Intent(this, MainActivity.class));
-            finish();
-            return;
-        }
-
         setContentView(R.layout.activity_login);
 
         edtUsername = findViewById(R.id.edtUsername);
@@ -39,6 +30,9 @@ public class LoginActivity extends AppCompatActivity {
         btnLogin = findViewById(R.id.btnLogin);
         btnGoRegister = findViewById(R.id.btnGoRegister);
         dbHelper = new DBHelper(this);
+
+        // Inicializar Firebase Analytics
+        firebaseAnalytics = FirebaseAnalytics.getInstance(this);
 
         btnLogin.setOnClickListener(v -> loginUser());
         btnGoRegister.setOnClickListener(v -> {
@@ -58,20 +52,33 @@ public class LoginActivity extends AppCompatActivity {
             String inputHash = PasswordUtils.hashPassword(password, salt);
 
             if (storedHash.equals(inputHash)) {
-                // ✅ Guardar sesión
-                getSharedPreferences("MyPrefs", MODE_PRIVATE)
-                        .edit()
-                        .putString("loggedUser", username)
-                        .apply();
-
                 Toast.makeText(this, "Login exitoso", Toast.LENGTH_SHORT).show();
+
+                // 👉 Evento de login exitoso
+                Bundle bundle = new Bundle();
+                bundle.putString("username", username);
+                bundle.putString("source", "login_screen");
+                firebaseAnalytics.logEvent("login_success", bundle);
+
                 startActivity(new Intent(this, MainActivity.class));
                 finish();
             } else {
                 Toast.makeText(this, "Contraseña incorrecta", Toast.LENGTH_SHORT).show();
+
+                // 👉 Evento de login fallido
+                Bundle bundle = new Bundle();
+                bundle.putString("username", username);
+                bundle.putString("error_code", "wrong_password");
+                firebaseAnalytics.logEvent("login_fail", bundle);
             }
         } else {
             Toast.makeText(this, "Usuario no encontrado", Toast.LENGTH_SHORT).show();
+
+            // 👉 Evento de usuario no encontrado
+            Bundle bundle = new Bundle();
+            bundle.putString("username", username);
+            bundle.putString("error_code", "user_not_found");
+            firebaseAnalytics.logEvent("login_fail", bundle);
         }
     }
 }
